@@ -2,6 +2,7 @@ package com.uala.user.controller;
 
 import com.uala.user.model.UserModel;
 import com.uala.user.repository.UserRepository;
+import com.uala.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,10 +17,12 @@ import java.util.Optional;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final UserService userService;
 
     @Autowired
-    public UserController(UserRepository userRepository) {
+    public UserController(UserRepository userRepository, UserService userService) {
         this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     @PostMapping("/api/users")
@@ -29,8 +32,7 @@ public class UserController {
     }
 
     @GetMapping("/api/users")
-    public ResponseEntity<Page<UserModel>> getAllUsers(@RequestParam(defaultValue = "0") int page,
-                                                       @RequestParam(defaultValue = "20") int size) {
+    public ResponseEntity<Page<UserModel>> getAllUsers(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "20") int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<UserModel> usersPage = userRepository.findAll(pageable);
         if (usersPage.isEmpty()) {
@@ -43,17 +45,15 @@ public class UserController {
     @GetMapping("/api/users/{id}")
     public ResponseEntity<UserModel> getUser(@PathVariable String id) {
         Optional<UserModel> user = userRepository.findById(id);
-        return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PutMapping("/api/users/{id}")
-    public ResponseEntity<UserModel> updateUser(@PathVariable String id, @RequestBody UserModel user) {
+    @PutMapping("/api/users/follow/{id}/{followId}")
+    public ResponseEntity<UserModel> followUser(@PathVariable String id, @PathVariable String followId) {
         Optional<UserModel> existingUser = userRepository.findById(id);
         if (existingUser.isPresent()) {
-            user.setId(id); // Ensure the user id is set to the requested id
-            UserModel updatedUser = userRepository.save(user);
-            return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+            userService.followUser(existingUser.get(), followId);
+            return new ResponseEntity<>(HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
