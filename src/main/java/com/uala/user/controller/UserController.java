@@ -49,15 +49,10 @@ public class UserController {
         return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
-    @PutMapping("/api/users/follow/{id}/{followId}")
-    public ResponseEntity<UserModel> followUser(@PathVariable String id, @PathVariable String followId) {
-        Optional<UserModel> existingUser = userRepository.findById(id);
-        if (existingUser.isPresent()) {
-            userService.followUser(existingUser.get(), followId);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    @PostMapping("/follow")
+    public ResponseEntity<String> followUser(@RequestParam String userId, @RequestParam String followedUserId) {
+        userService.followUser(userId, followedUserId);
+        return ResponseEntity.status(HttpStatus.OK).body("User with id " + userId + " is now following user with id " + followedUserId);
     }
 }
 

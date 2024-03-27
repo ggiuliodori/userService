@@ -5,64 +5,64 @@ import com.uala.user.repository.UserRepository;
 import com.uala.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.ArrayList;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-class ServiceTest {
+@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
 
-    @Mock
-    private UserModel userModel;
-
     @InjectMocks
     private UserService userService;
 
+    private UserModel user;
+    private UserModel followedUser;
+
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        user = new UserModel();
+        user.setId("1");
+
+        followedUser = new UserModel();
+        followedUser.setId("2");
     }
 
     @Test
-    void testFollowUser_Successful() {
-        UserModel follower = new UserModel("1", "follower", "follower@example.com", "password", new ArrayList<>(), new ArrayList<>());
-        UserModel followee = new UserModel("2", "followee", "followee@example.com", "password", new ArrayList<>(), new ArrayList<>());
+    void followUser_Successfully() {
+        when(userRepository.findById("1")).thenReturn(Optional.of(user));
+        when(userRepository.findById("2")).thenReturn(Optional.of(followedUser));
 
-        when(userRepository.findById("2")).thenReturn(Optional.of(followee));
-        doReturn(userModel).when(userRepository).save(any(UserModel.class));
+        userService.followUser("1", "2");
 
-        userService.followUser(follower, "2");
-
-        verify(userRepository, times(1)).findById("2");
-        verify(userRepository, times(1)).save(follower);
-        verify(userRepository, times(1)).save(followee);
-
-        assertEquals(1, follower.getFollowing().size());
-        assertEquals("2", follower.getFollowing().get(0));
-
-        assertEquals(1, followee.getFollowers().size());
-        assertEquals("1", followee.getFollowers().get(0));
+        verify(userRepository, times(1)).save(user);
+        assert(user.getFollowing().contains(followedUser));
     }
 
     @Test
-    void testFollowUser_FolloweeNotFound() {
-        UserModel follower = new UserModel("1", "follower", "follower@example.com", "password", new ArrayList<>(), new ArrayList<>());
+    void followUser_UserNotFound() {
+        when(userRepository.findById("1")).thenReturn(Optional.empty());
 
+        assertThrows(IllegalArgumentException.class, () -> userService.followUser("1", "2"));
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void followUser_FollowedUserNotFound() {
+        when(userRepository.findById("1")).thenReturn(Optional.of(user));
         when(userRepository.findById("2")).thenReturn(Optional.empty());
 
-        userService.followUser(follower, "2");
+        assertThrows(IllegalArgumentException.class, () -> userService.followUser("1", "2"));
 
-        verify(userRepository, times(1)).findById("2");
-        verify(userRepository, never()).save(any(UserModel.class));
-
-        assertEquals(0, follower.getFollowing().size());
+        verify(userRepository, never()).save(any());
     }
 }
