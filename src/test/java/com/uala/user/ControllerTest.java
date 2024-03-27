@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,8 +57,8 @@ class ControllerTest {
     @Test
     void testGetAllUsers() {
         List<UserModel> userList = new ArrayList<>();
-        userList.add(new UserModel("1", "user1", "user1@example.com", "password", new ArrayList<>(), new ArrayList<>()));
-        userList.add(new UserModel("2", "user2", "user2@example.com", "password", new ArrayList<>(), new ArrayList<>()));
+        userList.add(new UserModel("1", "user1", "user1@example.com", "password", new HashSet<>()));
+        userList.add(new UserModel("2", "user2", "user2@example.com", "password", new HashSet<>()));
 
         Page<UserModel> userPage = new PageImpl<>(userList);
 
@@ -72,7 +73,7 @@ class ControllerTest {
     @Test
     void testGetUser() {
         String userId = "1";
-        UserModel user = new UserModel(userId, "user1", "user1@example.com", "password", new ArrayList<>(), new ArrayList<>());
+        UserModel user = new UserModel(userId, "user1", "user1@example.com", "password", new HashSet<>());
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
@@ -86,15 +87,15 @@ class ControllerTest {
     void testFollowUser() {
         String userId = "1";
         String followId = "2";
-        UserModel user = new UserModel(userId, "user1", "user1@example.com", "password", new ArrayList<>(), new ArrayList<>());
+        UserModel user = new UserModel(userId, "user1", "user1@example.com", "password", new HashSet<>());
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        doNothing().when(userService).followUser(user, followId);
+        doNothing().when(userService).followUser(user.getId(), followId);
 
-        ResponseEntity<UserModel> response = userController.followUser(userId, followId);
+        ResponseEntity<String> response = userController.followUser(userId, followId);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(userService, times(1)).followUser(user, followId);
+        verify(userService, times(1)).followUser(user.getId(), followId);
     }
 }
 
