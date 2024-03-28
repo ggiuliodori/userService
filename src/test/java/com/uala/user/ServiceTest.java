@@ -1,6 +1,6 @@
 package com.uala.user;
 
-import com.uala.user.model.UserModel;
+import com.uala.user.model.entity.UserEntity;
 import com.uala.user.repository.UserRepository;
 import com.uala.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,15 +24,15 @@ class UserServiceTest {
     @InjectMocks
     private UserService userService;
 
-    private UserModel user;
-    private UserModel followedUser;
+    private UserEntity user;
+    private UserEntity followedUser;
 
     @BeforeEach
     void setUp() {
-        user = new UserModel();
+        user = new UserEntity();
         user.setId("1");
 
-        followedUser = new UserModel();
+        followedUser = new UserEntity();
         followedUser.setId("2");
     }
 

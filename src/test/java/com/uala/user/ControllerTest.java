@@ -1,7 +1,8 @@
 package com.uala.user;
 
 import com.uala.user.controller.UserController;
-import com.uala.user.model.UserModel;
+import com.uala.user.model.api.UserModelResponse;
+import com.uala.user.model.entity.UserEntity;
 import com.uala.user.repository.UserRepository;
 import com.uala.user.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,14 +42,14 @@ class ControllerTest {
 
     @Test
     void testCreateUser() {
-        UserModel user = new UserModel();
+        UserEntity user = new UserEntity();
         user.setUsername("testUser");
         user.setEmail("test@example.com");
         user.setPassword("password");
 
         when(userRepository.save(user)).thenReturn(user);
 
-        ResponseEntity<UserModel> response = userController.createUser(user);
+        ResponseEntity<UserEntity> response = userController.createUser(user);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(user, response.getBody());
@@ -56,15 +57,15 @@ class ControllerTest {
 
     @Test
     void testGetAllUsers() {
-        List<UserModel> userList = new ArrayList<>();
-        userList.add(new UserModel("1", "user1", "user1@example.com", "password", new HashSet<>()));
-        userList.add(new UserModel("2", "user2", "user2@example.com", "password", new HashSet<>()));
+        List<UserEntity> userList = new ArrayList<>();
+        userList.add(new UserEntity("1", "user1", "user1@example.com", "password", new HashSet<>(), new HashSet<>()));
+        userList.add(new UserEntity("2", "user2", "user2@example.com", "password", new HashSet<>(), new HashSet<>()));
 
-        Page<UserModel> userPage = new PageImpl<>(userList);
+        Page<UserEntity> userPage = new PageImpl<>(userList);
 
         when(userRepository.findAll(any(Pageable.class))).thenReturn(userPage);
 
-        ResponseEntity<Page<UserModel>> response = userController.getAllUsers(0, 20);
+        ResponseEntity<Page<UserModelResponse>> response = userController.getAllUsers(0, 20);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(userPage, response.getBody());
@@ -73,11 +74,11 @@ class ControllerTest {
     @Test
     void testGetUser() {
         String userId = "1";
-        UserModel user = new UserModel(userId, "user1", "user1@example.com", "password", new HashSet<>());
+        UserEntity user = new UserEntity(userId, "user1", "user1@example.com", "password", new HashSet<>(), new HashSet<>());
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        ResponseEntity<UserModel> response = userController.getUser(userId);
+        ResponseEntity<UserModelResponse> response = userController.getUser(userId);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(user, response.getBody());
@@ -87,7 +88,7 @@ class ControllerTest {
     void testFollowUser() {
         String userId = "1";
         String followId = "2";
-        UserModel user = new UserModel(userId, "user1", "user1@example.com", "password", new HashSet<>());
+        UserEntity user = new UserEntity(userId, "user1", "user1@example.com", "password", new HashSet<>(), new HashSet<>());
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         doNothing().when(userService).followUser(user.getId(), followId);
