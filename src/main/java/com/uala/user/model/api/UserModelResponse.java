@@ -20,6 +20,4 @@ public class UserModelResponse {
     private String password;
     private String email;
     private Set<String> following = new HashSet<>();
-    private Set<String> follower = new HashSet<>();
-
 }

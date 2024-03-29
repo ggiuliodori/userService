@@ -16,7 +16,6 @@ public class UserParser {
                 .email(userEntity.getEmail())
                 .username(userEntity.getUsername())
                 .following(userEntity.getFollowing().stream().map(UserEntity::getId).collect(Collectors.toSet()))
-                .follower(userEntity.getFollower().stream().map(UserEntity::getId).collect(Collectors.toSet()))
                 .build()).orElse(null);
     }
 }

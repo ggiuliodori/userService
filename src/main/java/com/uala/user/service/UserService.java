@@ -12,9 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @Service
@@ -31,8 +29,7 @@ public class UserService {
     @Cacheable(value = "userCache", key = "#id")
     public UserModelResponse getUser(String id) {
         log.info("Fetching user with id {} from database", id);
-        UserEntity user = userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("User with id " + id + " not found"));
-        return userParser.userEntityToUserApiModel(user);
+        return userRepository.findById(id).map(userParser::userEntityToUserApiModel).orElseThrow(() -> new NoSuchElementException("User with id " + id + " not found"));
     }
 
     @Transactional
@@ -44,9 +41,7 @@ public class UserService {
         user.getFollowing().add(followedUser);
         userRepository.save(user);
 
-        followedUser.getFollower().add(user);
-        userRepository.save(followedUser);
-
+        log.info("Clear cache for users {} - {}", userId, followedUserId);
         cacheClearService.evictUserCache(userId);
         cacheClearService.evictUserCache(followedUserId);
 

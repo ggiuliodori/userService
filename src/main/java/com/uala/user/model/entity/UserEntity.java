@@ -33,10 +33,4 @@ public class UserEntity {
             inverseJoinColumns = @JoinColumn(name = "user_follow_id"))
     private Set<UserEntity> following = new HashSet<>();
 
-    @OneToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_followed",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_followed_id"))
-    private Set<UserEntity> follower = new HashSet<>();
-
 }
